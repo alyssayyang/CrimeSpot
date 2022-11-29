@@ -1,5 +1,7 @@
 const mongoos = require('mongoose');
-
+/*
+user schema has changed
+*/
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
