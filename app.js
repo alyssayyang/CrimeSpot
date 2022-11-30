@@ -1,104 +1,99 @@
 // Requiring modules
 const express = require('express');
-const session = require('express-session')
+const User = require('./models/user');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+
 const app = express();
-const mysql = require('mysql');
-const dotenv = require('dotenv');
 const path = require('path');
-const { Static } = require('vue');
 const ejsMate = require('ejs-mate');
+const user = require('./models/user');
+const { support } = require('jquery');
 
 //my computer's router address
 const hostname = 'localhost';
-const port = 5500;
-const passport =  require('passport');
-
+const port = 3000;
+mongoose = require('mongoose');
 
 
 app.engine('ejs',ejsMate);
 app.set('view engine','ejs');
 app.set('views',path.join(__dirname,'views'));
 app.use(express.static(__dirname + '/public'));
-app.use(express.urlencoded({extended:'false'}));
-app.use(express.json());
+app.use(bodyParser.urlencoded({extended : true}));
+app.use(bodyParser.json());
+app.use(session({secret:'customized secret'}))
 
-app.use(session({ secret: 'cats'}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-require('./authenticate');
-
-function isLoggedIn(req,res,next){
-  req.user ? next() : res.sendStatus(401);
+const requireLogin = (req,res,next) => {
+  if(!req.session.user_id){
+    return res.redirect('/login')
+  }
+  next();
 }
-
-// app.use('/',indexRouter);
-// app.use('/users',usersRouter);
-
-
-var con = mysql.createConnection({
-    database:"crimeMap",
-    host: "localhost",
-    user: "root",
-    password: "ERdf1234"
+mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
+    if(err){
+      console.log("fail");
+      console.log(err);
+    }else{
+      console.log("db connect success");
+    }
 });
-  
-  con.connect(function(err) {
-    if (err) throw err;
-    console.log("db Connected!");
-  });
 
-  app.get("/",(req,res) => {
-    res.send('<a href="auth/google">Authenticate with Google</a>')
-  });
+app.get("/",(req,res) => {
+  res.send('this is home page')
+});
 
-  app.get('/auth/google',
-    passport.authenticate('google',{scope: ['email','profile']})
-  );
+app.get("/home",(req,res) => {
+  res.render("home")
+});
 
-  app.get('/google/callback',
-    passport.authenticate('google',{
-      successRedirect: '/protected',
-      failureRedirect: '/auth/failure',
-    })
-  );
+app.get("/register",(req,res) => {
+  res.render('register')
+});
 
-  app.get('/protected',isLoggedIn,(req, res) => {
-    res.send("hello");
-  });
+//TODO: check if two passwords are the same
+app.post('/register', async (req,res) => {
+  const { username, email, password,} = req.body;
+  console.log(email);
+  //in the schema, we have a function that would be called pre save()
+  //in which we will save the hashed password
+  const user = new User({username,password})
+  await user.save();
+  req.session.user_id = user._id;
+  res.redirect('/')
+})
 
-  app.get('/logout',(req,res) => {
-    req.logout();
-    res.send("logged out");
-  })
+app.get('/login',(req,res) => {
+  res.render('login')
+})
 
-  app.get('/auth/failure',(req,res) => {
-    alert('something wrong')
-  })
+app.post('login',async (req,res) => {
+  const {username, password} = req.body;
+  const foundUser = await User.findAndValidate(username,password);
+  const validPassword = await bcrypt.compare(password,user.password);
 
-  //the website we want to protect unless user is logged in
+  if(foundUser){
+    req.session.user_id = foundUser._id;
+    res.send('/secret')
+  }else{
+    res.send('denied')
+  }
+})
+
+app.post('/logout',(req,res) => {
+  req.session.user_id = null;
+  res.redirect('/login')
+}
+)
+
+app.get('/secret',requireLogin,(req,res)=>{
+  res.render('/secret')
+})
 
 
 
-  // app.get('/google/callback',passport.authenticate( 'google', {
-  //   successRedirect: '/home',
-  //   failureRedirect: '/auth/google'
-  // }));
-
-  app.get("/home",(req,res) => {
-    res.render("home")
-  });
-
-  app.get("/login",(req,res) => {
-    res.render("login")
-  });
-
-  app.post("/auth/register",(req,res)=>{
-    const {name, email, password, password_confirm} = req.body
-    
-  });
-
-  app.listen(port,hostname, () => {
-    console.log("server started on port",port)
-  });
+app.listen(port,hostname, () => {
+  console.log("server started on port",port)
+});
 
