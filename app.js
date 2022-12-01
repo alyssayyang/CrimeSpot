@@ -32,7 +32,6 @@ const requireLogin = (req, res, next) => {
 }
 
 const requireAdmin = (req, res, next) => {
-  console.log('middleware ', req.session.usertype);
   if(req.session.usertype != 'admin'){
     return res.send('requires admin access')
   }
@@ -63,11 +62,11 @@ app.get("/register", (req, res) => {
 
 //TODO: check if two passwords are the same
 app.post('/register', async (req,res) => {
-  const {username, password, usertype} = req.body;
-  const user = new User({username,password,usertype})
+  const {username, useremail, password, usertype} = req.body;
+  const user = new User({username,useremail,password,usertype})
   await user.save();
-  console.log(user);
   req.session.user_id = user._id;
+  console.log(user._id);
   req.session.usertype=user.usertype;
   res.redirect('/home')
 })
@@ -82,22 +81,25 @@ app.post('/login',async (req,res) => {
   // const validPassword = await bcrypt.compare(password,user.password);
   if(foundUser){
     req.session.user_id = foundUser._id;
-    eq.session.usertype=foundUser.usertype;
+    req.session.usertype=foundUser.usertype;
     res.render('home')
   }else{
-
     res.send("The user does not exist or the password does not match, please try again or register for new account");
   }
 })
 
-app.get('/secret',requireLogin,(req,res)=>{
-  res.render('secret')
+
+app.get('/profile', async (req,res) => {
+  const id = req.session.user_id;
+  const foundUser = await User.findOne({id});
+  res.render('profile',{User: foundUser});
 })
 
-app.get('/secret', requireLogin, (req, res) => {
-    res.render('/secret')
+app.get('/editprofile', async (req,res) => {
+  const id = req.session.user_id;
+  const foundUser = await User.findOne({id});
+  res.render('editprofile',{User: foundUser});
 })
-
 
 
 app.listen(port, hostname, () => {

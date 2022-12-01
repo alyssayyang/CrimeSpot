@@ -63,6 +63,12 @@
 <!-- <script scr = "../public/scripts/map.js"></script>
 <script scr = "../public/scripts/home.js"></script> -->
 
+<!-- import 3rd party scripts and styles -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+ 
 <script>
 //get the first button
 document.getElementById('search_bt').addEventListener("click",handleClick);
@@ -82,7 +88,6 @@ function setUpFelonyDD(){
     for(var i = 0; i<FelonyType.length;i++){
         option += '<option value="'+FelonyType[i]+'">' + FelonyType[i] + "</option>"
     }
-    console.log('woot')
     document.getElementById('dd_crimeType').innerHTML = option
 }
 
@@ -95,7 +100,6 @@ function setUpYearDD(){
     for(var i = 2022; i>1972;i--){
         option +='<option value="'+i+'">' + i+ "</option>"
     }
-    console.log('huuu')
     document.getElementById('dd_crimeyear').innerHTML = option
 }
 
@@ -104,8 +108,6 @@ setUpYearDD();
 function handleClick(){
 
 }
-
-
 
 //use check Status to handle reference error
 const checkStatus = async(url) => {
@@ -116,10 +118,6 @@ const checkStatus = async(url) => {
     }
     data = await response.json();
     return data
-
-        // if(err instanceof ReferenceError){
-        //     alert(err.name+": " +err.message);
-        // }
 }
 
 

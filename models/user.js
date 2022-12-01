@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required:[true,'Password cannot be blank']
     },
+    useremail: {
+        type:String,
+        required:[true,'Password cannot be blank']
+    },
     usertype:{
         type: String,
     }
