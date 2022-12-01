@@ -30,21 +30,31 @@ const requireLogin = (req, res, next) => {
     }
     next();
 }
-mongoose.connect("mongodb://127.0.0.1:27017/crimespot", (err) => {
-    if (err) {
-        console.log("fail");
-        console.log(err);
-    } else {
-        console.log("db connect success");
+
+const requireAdmin = (req, res, next) => {
+  console.log('middleware ', req.session.usertype);
+  if(req.session.usertype != 'admin'){
+    return res.send('requires admin access')
+  }
+  next();
+}
+
+mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
+    if(err){
+      console.log("fail");
+      console.log(err);
+    }else{
+      console.log("db connect success");
     }
 });
 
-app.get("/", (req, res) => {
-    res.send('this is home page')
+app.get("/",(req,res) => {
+  // res.send('this is home page')
+  res.render("register")
 });
 
-app.get("/home", (req, res) => {
-    res.render("home")
+app.get("/home",requireLogin,requireAdmin,(req,res) => {
+  res.render("home")
 });
 
 app.get("/register", (req, res) => {
@@ -52,37 +62,36 @@ app.get("/register", (req, res) => {
 });
 
 //TODO: check if two passwords are the same
-app.post('/register', async(req, res) => {
-    const { username, email, password, } = req.body;
-    console.log(email);
-    //in the schema, we have a function that would be called pre save()
-    //in which we will save the hashed password
-    const user = new User({ username, password })
-    await user.save();
-    req.session.user_id = user._id;
-    res.redirect('/')
+app.post('/register', async (req,res) => {
+  const {username, password, usertype} = req.body;
+  const user = new User({username,password,usertype})
+  await user.save();
+  console.log(user);
+  req.session.user_id = user._id;
+  req.session.usertype=user.usertype;
+  res.redirect('/home')
 })
 
 app.get('/login', (req, res) => {
     res.render('login')
 })
 
-app.post('login', async(req, res) => {
-    const { username, password } = req.body;
-    const foundUser = await User.findAndValidate(username, password);
-    const validPassword = await bcrypt.compare(password, user.password);
+app.post('/login',async (req,res) => {
+  const {username, password} = req.body;
+  const foundUser = await User.findAndValidate(username,password);
+  // const validPassword = await bcrypt.compare(password,user.password);
+  if(foundUser){
+    req.session.user_id = foundUser._id;
+    eq.session.usertype=foundUser.usertype;
+    res.render('home')
+  }else{
 
-    if (foundUser) {
-        req.session.user_id = foundUser._id;
-        res.send('/secret')
-    } else {
-        res.send('denied')
-    }
+    res.send("The user does not exist or the password does not match, please try again or register for new account");
+  }
 })
 
-app.post('/logout', (req, res) => {
-    req.session.user_id = null;
-    res.redirect('/login')
+app.get('/secret',requireLogin,(req,res)=>{
+  res.render('secret')
 })
 
 app.get('/secret', requireLogin, (req, res) => {
