@@ -31,6 +31,15 @@ const requireLogin = (req,res,next) => {
   }
   next();
 }
+
+const requireAdmin = (req, res, next) => {
+  console.log('middleware ', req.session.usertype);
+  if(req.session.usertype != 'admin'){
+    return res.send('requires admin access')
+  }
+  next();
+}
+
 mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
     if(err){
       console.log("fail");
@@ -41,10 +50,11 @@ mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
 });
 
 app.get("/",(req,res) => {
-  res.send('this is home page')
+  // res.send('this is home page')
+  res.render("register")
 });
 
-app.get("/home",(req,res) => {
+app.get("/home",requireLogin,requireAdmin,(req,res) => {
   res.render("home")
 });
 
@@ -54,30 +64,30 @@ app.get("/register",(req,res) => {
 
 //TODO: check if two passwords are the same
 app.post('/register', async (req,res) => {
-  const { username, email, password,} = req.body;
-  console.log(email);
-  //in the schema, we have a function that would be called pre save()
-  //in which we will save the hashed password
-  const user = new User({username,password})
+  const {username, password, usertype} = req.body;
+  const user = new User({username,password,usertype})
   await user.save();
+  console.log(user);
   req.session.user_id = user._id;
-  res.redirect('/')
+  req.session.usertype=user.usertype;
+  res.redirect('/home')
 })
 
 app.get('/login',(req,res) => {
   res.render('login')
 })
 
-app.post('login',async (req,res) => {
+app.post('/login',async (req,res) => {
   const {username, password} = req.body;
   const foundUser = await User.findAndValidate(username,password);
-  const validPassword = await bcrypt.compare(password,user.password);
-
+  // const validPassword = await bcrypt.compare(password,user.password);
   if(foundUser){
     req.session.user_id = foundUser._id;
-    res.send('/secret')
+    eq.session.usertype=foundUser.usertype;
+    res.render('home')
   }else{
-    res.send('denied')
+
+    res.send("The user does not exist or the password does not match, please try again or register for new account");
   }
 })
 
@@ -88,7 +98,7 @@ app.post('/logout',(req,res) => {
 )
 
 app.get('/secret',requireLogin,(req,res)=>{
-  res.render('/secret')
+  res.render('secret')
 })
 
 
