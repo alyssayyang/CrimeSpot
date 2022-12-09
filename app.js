@@ -1,28 +1,42 @@
 // Requiring modules
-const express = require('express');
-const User = require('./models/user');
-const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
-const session = require('express-session');
+const express = require('express')
+const db_user = require('./models/user')
+const db_crimedata = require('./models/CrimeData')
+const bodyParser = require('body-parser')
+const session = require('express-session')
 
-const app = express();
-const path = require('path');
-const ejsMate = require('ejs-mate');
-const user = require('./models/user');
+const app = express()
+const path = require('path')
+const ejsMate = require('ejs-mate')
+const { render } = require('ejs')
+const { collection } = require('./models/user')
+const { ppid } = require('process')
+
+
+
 
 //my computer's router address
-const hostname = 'localhost';
-const port = 3000;
-mongoose = require('mongoose');
+const hostname = 'localhost'
+const port = 3000
+mongoose = require('mongoose')
+mongoose.set('strictQuery', false);
 
+app.engine('ejs', ejsMate)
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'views'))
 
-app.engine('ejs', ejsMate);
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/static", express.static('./static/'))
+
+app.use(express.static(__dirname + '/public'))
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
 app.use(session({ secret: 'customized secret' }))
+
+const MongoClient = require('mongodb').MongoClient
+const myurl = "mongodb://127.0.0.1:27017/crimespot"
+
+
+
 
 const requireLogin = (req, res, next) => {
     if (!req.session.user_id) {
@@ -38,7 +52,17 @@ const requireAdmin = (req, res, next) => {
   next();
 }
 
-mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
+
+
+/*
+mongoose uses mongoClient to connect to the server;
+
+few differences between these two connects;
+mongoose returns promise, mongoclient returns null
+mongoose connect is backed by an internal configurable connection pool
+*/
+
+  mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
     if(err){
       console.log("fail");
       console.log(err);
@@ -47,23 +71,45 @@ mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
     }
 });
 
+
 app.get("/",(req,res) => {
   // res.send('this is home page')
   res.render("register")
 });
 
-app.get("/home",requireLogin,requireAdmin,(req,res) => {
-  res.render("home")
+app.get('/getcrime',(req,res) => {
+  MongoClient.connect(myurl)
+    .then(client =>{
+    const db = client.db('crimespot');
+    const collection = db.collection('crimedata');
+    collection.find({}).toArray()
+    .then(response => data = res.status(200).json(response))
+    .catch(error => console.log(error));
+  });
+})
+
+// const data =  getdata();
+// getdata().then(res => data = res);
+
+// an example of getting data
+// app.get("/",(req,res) => {
+//   const collection = req.app.locals.collection;
+//   collection.find({}).toArray()
+//   .then(response => res.status(200).json(response))
+//   .catch(error => console.log(error));
+// });
+
+
+app.get("/home",requireLogin,requireAdmin, (req,res) => {
+  res.render('home')
 });
 
-app.get("/register", (req, res) => {
-    res.render('register')
-});
+
 
 //TODO: check if two passwords are the same
 app.post('/register', async (req,res) => {
   const {username, useremail, password, usertype} = req.body;
-  const user = new User({username,useremail,password,usertype})
+  const user = new db_user({username,useremail,password,usertype})
   await user.save();
   req.session.user_id = user._id;
   console.log(user._id);
@@ -77,7 +123,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login',async (req,res) => {
   const {username, password} = req.body;
-  const foundUser = await User.findAndValidate(username,password);
+  const foundUser = await db_user.findAndValidate(username,password);
   // const validPassword = await bcrypt.compare(password,user.password);
   if(foundUser){
     req.session.user_id = foundUser._id;
@@ -91,14 +137,31 @@ app.post('/login',async (req,res) => {
 
 app.get('/profile', async (req,res) => {
   const id = req.session.user_id;
-  const foundUser = await User.findOne({id});
-  res.render('profile',{User: foundUser});
+  const foundUser = await db_user.findOne({id});
+  res.render('profile',{db_user: foundUser});
 })
 
 app.get('/editprofile', async (req,res) => {
   const id = req.session.user_id;
-  const foundUser = await User.findOne({id});
+  const foundUser = await db_user.findOne({id});
   res.render('editprofile',{User: foundUser});
+})
+
+app.post('/editprofile',async (req,res) => {
+  console.log('woot');
+  const id = req.session.user_id;
+  const foundUser = await db_user.findOne({id});
+  console.log(req.body);
+  console.log('woot');
+  
+  const {newemail} = req.body;
+
+  console.log(newemail);
+  console.log('woot');
+
+  res.redirect('profile')
+  // foundUser.useremail = newemail;
+  // User.updateOne(foundUser);
 })
 
 

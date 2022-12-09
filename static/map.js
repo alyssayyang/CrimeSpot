@@ -5,7 +5,7 @@ const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
     center:[-71.0575,42.3655],// longitude, Latitude
-    zoom:9
+    zoom:2.2
 });
 
 /* Given a query in the form "lng, lat" or "lat, lng"
@@ -72,6 +72,82 @@ map.addControl(
         reverseGeocode:true
     })
 );
+
+
+
+// Data: UN Human Development Index 2017 Europe extract
+// Source: https://ourworldindata.org/human-development-index
+const get_data = async () => {
+  const query =  await fetch('../static/hdi_index.json', {method : 'GET'});
+  const data = await query.json();
+  return data;
+}
+
+
+// export const filterdata = async (c_type,c_year) => {
+//   const rawdata = await get_data();
+//   const data = [];
+//   for(const row of data){
+//     if(row['crimetype'] == )
+//   }
+
+// }
+
+
+
+// Build a GL match expression that defines the color for every vector tile feature
+// Use the ISO 3166-1 alpha 3 code as the lookup key for the country shape
+const matchExpression = ['match', ['get', 'iso_3166_1_alpha_3']];
+
+
+
+
+map.on('load', async () => {
+// Add source for country polygons using the Mapbox Countries tileset
+// The polygons contain an ISO 3166 alpha-3 code which can be used to for joining the data
+// https://docs.mapbox.com/vector-tiles/reference/mapbox-countries-v1
+  map.addSource('countries', {
+    type: 'vector',
+    url: 'mapbox://mapbox.country-boundaries-v1'
+  });
+  
+  const data = await get_data ();
+
+  for (const row of data) {
+    if(row['Year'] == 1995 && row['Code'] != ""){;
+      const red = row['hdi'] * 255*2;
+      const color = `rgb(${red},0,0)`;
+
+      matchExpression.push(row['Code'], color);
+    }
+  // Convert the range of data values to a suitable color
+  }
+  
+  // Last value is the default, used where there is no data
+  matchExpression.push('rgba(0, 0, 0, 0)');
+
+  
+  // Add layer from the vector tile source to create the choropleth
+  // Insert it below the 'admin-1-boundary-bg' layer in the style
+  map.addLayer(
+    {
+    'id': 'countries-join',
+    'type': 'fill',
+    'source': 'countries',
+    'source-layer': 'country_boundaries',
+    'paint': {
+    'fill-color': matchExpression
+    }
+    },
+    'admin-1-boundary-bg'
+  );
+});
+
+
+
+
+
+
 
 
 
