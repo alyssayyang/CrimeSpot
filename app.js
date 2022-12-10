@@ -1,6 +1,6 @@
 // Requiring modules
 const express = require('express')
-const db_user = require('./models/user')
+const db_user = require('./models/User')
 const db_crimedata = require('./models/CrimeData')
 const bodyParser = require('body-parser')
 const session = require('express-session')
@@ -9,7 +9,7 @@ const app = express()
 const path = require('path')
 const ejsMate = require('ejs-mate')
 const { render } = require('ejs')
-const { collection } = require('./models/user')
+const { collection } = require('./models/User')
 const { ppid } = require('process')
 
 
@@ -48,8 +48,6 @@ const requireAdmin = (req, res, next) => {
   }
   next();
 }
-
-
 
 
 app.get("/",(req,res) => {

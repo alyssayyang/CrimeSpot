@@ -1,7 +1,5 @@
 
 
-//get the first button
-document.getElementById('search_bt').addEventListener("click",handleClick);
 
 
 function setUpFelonyDD(){
@@ -30,13 +28,6 @@ function setUpYearDD(){
 setUpYearDD();
 
 
-
-function handleClick(){
-    var type = document.getElementById('dd_crimeType').value;
-    var year = document.getElementById('dd_crimeyear').value;
-
-    console.log({type},{year})
-}
 
 //use check Status to handle reference error
 const checkStatus = async(url) => {

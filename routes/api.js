@@ -13,6 +13,7 @@ router.get('/getAll', async (req,res) => {
         MongoClient.connect(myurl,function(err,db){
             if(err) throw err;
             var dbo = db.db('crimespot');
+
             dbo.collection('crimedata').find({}).toArray()
             .then(response => res.status(200).json(response))
             .catch(error => console.log(error));
