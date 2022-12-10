@@ -78,27 +78,18 @@ map.addControl(
 // Data: UN Human Development Index 2017 Europe extract
 // Source: https://ourworldindata.org/human-development-index
 const get_data = async () => {
-  const query =  await fetch('../static/hdi_index.json', {method : 'GET'});
-  const data = await query.json();
+  const response =  await fetch('http://localhost:3000/api/getAll', {method : 'GET'})
+
+  const data = await response.json()
+  console.log(data)
   return data;
 }
-
-
-// export const filterdata = async (c_type,c_year) => {
-//   const rawdata = await get_data();
-//   const data = [];
-//   for(const row of data){
-//     if(row['crimetype'] == )
-//   }
-
-// }
 
 
 
 // Build a GL match expression that defines the color for every vector tile feature
 // Use the ISO 3166-1 alpha 3 code as the lookup key for the country shape
 const matchExpression = ['match', ['get', 'iso_3166_1_alpha_3']];
-
 
 
 
@@ -114,14 +105,16 @@ map.on('load', async () => {
   const data = await get_data ();
 
   for (const row of data) {
-    if(row['Year'] == 1995 && row['Code'] != ""){;
-      const red = row['hdi'] * 255*2;
+    if(row['year']  == '2000' && row['code'] != "" && row['crimetype'] == 'homicide'){;
+      const red = row['crimerate'] * 255*2;
       const color = `rgb(${red},0,0)`;
 
-      matchExpression.push(row['Code'], color);
+      matchExpression.push(row['code'], color);
     }
   // Convert the range of data values to a suitable color
   }
+
+  console.log({matchExpression})
   
   // Last value is the default, used where there is no data
   matchExpression.push('rgba(0, 0, 0, 0)');
@@ -136,7 +129,7 @@ map.on('load', async () => {
     'source': 'countries',
     'source-layer': 'country_boundaries',
     'paint': {
-    'fill-color': matchExpression
+      'fill-color': matchExpression
     }
     },
     'admin-1-boundary-bg'

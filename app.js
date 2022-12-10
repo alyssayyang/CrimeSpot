@@ -13,13 +13,10 @@ const { collection } = require('./models/user')
 const { ppid } = require('process')
 
 
-
-
 //my computer's router address
 const hostname = 'localhost'
 const port = 3000
-mongoose = require('mongoose')
-mongoose.set('strictQuery', false);
+
 
 app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs')
@@ -32,10 +29,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
 app.use(session({ secret: 'customized secret' }))
 
-const MongoClient = require('mongodb').MongoClient
-const myurl = "mongodb://127.0.0.1:27017/crimespot"
+const api = require('./routes/api.js')
+app.use('/api',api)
 
-
+const database= require('./models/database')
 
 
 const requireLogin = (req, res, next) => {
@@ -53,23 +50,6 @@ const requireAdmin = (req, res, next) => {
 }
 
 
-
-/*
-mongoose uses mongoClient to connect to the server;
-
-few differences between these two connects;
-mongoose returns promise, mongoclient returns null
-mongoose connect is backed by an internal configurable connection pool
-*/
-
-  mongoose.connect("mongodb://127.0.0.1:27017/crimespot",(err) => {
-    if(err){
-      console.log("fail");
-      console.log(err);
-    }else{
-      console.log("db connect success");
-    }
-});
 
 
 app.get("/",(req,res) => {

@@ -17,4 +17,4 @@ const crimedataSchema = new mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('CrimeData',crimedataSchema);
+module.exports = mongoose.model('data',crimedataSchema);
