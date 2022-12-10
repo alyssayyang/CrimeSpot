@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Model = require('../models/CrimeData')
 
-const database= require('../models/database')
+// const database= require('../models/database')
 
 let MongoClient = require('mongodb').MongoClient;
 const myurl = "mongodb://127.0.0.1:27017/crimespot"

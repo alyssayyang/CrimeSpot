@@ -32,7 +32,7 @@ app.use(session({ secret: 'customized secret' }))
 const api = require('./routes/api.js')
 app.use('/api',api)
 
-const database= require('./models/database')
+// const database= require('./models/database')
 
 
 const requireLogin = (req, res, next) => {
