@@ -21,12 +21,18 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-userSchema.statics.findAndValidate = async function (username, password
+userSchema.statics.findAndValidate = async function (useremail, password
     ){
-        const foundUser = await this.findOne({ username });
+        const foundUser = await this.findOne({useremail});
         const isValid = await bcrypt.compare(password,foundUser.password)
         return isValid ? foundUser : false; 
     }
+
+userSchema.statics.validateEmail = async function(useremail){
+    const foundUser = await this.findOne({useremail});
+    return foundUser ? true : false;
+}
+
     
 // userSchema.statics.validateAdminAccess = async function(username){
 //     const foundUser = await this.findOne({ username });

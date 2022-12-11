@@ -34,13 +34,31 @@ app.use('/api',api)
 
 const database= require('./models/database')
 
+const ObjectId = require('mongodb').ObjectId;
 
 const requireLogin = (req, res, next) => {
+  const id = req.session.user_id
     if (!req.session.user_id) {
         return res.redirect('/login')
     }
     next();
 }
+
+// const requireLogin = (req, res, next) => {
+//   db_user.findById(req.session.userId).exec(function (error, user) {
+//     if (error) {
+//         return next(error);
+//     } else {      
+//         if (user === null) {     
+//             var err = new Error('Not authorized! Go back!');
+//             err.status = 401;
+//             return next(err);
+//         } else {
+//             return next();
+//         }
+//     }
+// });
+// }
 
 const requireAdmin = (req, res, next) => {
   if(req.session.usertype != 'admin'){
@@ -48,7 +66,6 @@ const requireAdmin = (req, res, next) => {
   }
   next();
 }
-
 
 app.get("/",(req,res) => {
   // res.send('this is home page')
@@ -78,66 +95,89 @@ app.get('/getcrime',(req,res) => {
 // });
 
 
-app.get("/home",requireLogin,requireAdmin, (req,res) => {
+app.get("/home",requireLogin,(req,res) => {
   res.render('home')
 });
 
 
+app.get('/register',(req,res)=>{
+  res.render('register')
+})
 
 //TODO: check if two passwords are the same
 app.post('/register', async (req,res) => {
   const {username, useremail, password, usertype} = req.body;
-  const user = new db_user({username,useremail,password,usertype})
-  await user.save();
-  req.session.user_id = user._id;
-  console.log(user._id);
-  req.session.usertype=user.usertype;
-  res.redirect('/home')
+
+  const emailused = await db_user.validateEmail(useremail);
+  if(emailused){
+    res.render('login')
+  }else{
+    const user = new db_user({username,useremail,password,usertype})
+    await user.save();
+    req.session.user_id = user._id;
+    req.session.usertype=user.usertype;
+    res.render('home')
+  }
+
 })
+
 
 app.get('/login', (req, res) => {
     res.render('login')
 })
 
 app.post('/login',async (req,res) => {
-  const {username, password} = req.body;
-  const foundUser = await db_user.findAndValidate(username,password);
-  // const validPassword = await bcrypt.compare(password,user.password);
-  if(foundUser){
-    req.session.user_id = foundUser._id;
-    req.session.usertype=foundUser.usertype;
-    res.render('home')
+  const {useremail, password} = req.body;
+
+  if(useremail == '' || password == '' ){
+    // res.status(401).send();
+    res.redirect('/login');
   }else{
-    res.send("The user does not exist or the password does not match, please try again or register for new account");
+    const emailused = await db_user.validateEmail(useremail);
+    if(emailused){
+      const foundUser = await db_user.findAndValidate(useremail,password);
+      if(foundUser){
+        req.session.user_id = foundUser._id;
+        req.session.usertype=foundUser.usertype;
+        // res.status(200).send();
+        res.render('home');
+      }else{
+      //403 for incorrect password
+      // res.status(403).send();
+      res.redirect('/login');
+      }
+    }
+    else{
+      // res.status(401).send();
+      res.redirect('/register')
+    }
   }
 })
 
-
-app.get('/profile', async (req,res) => {
+app.get('/profile',requireLogin, async (req,res) => {
   const id = req.session.user_id;
-  const foundUser = await db_user.findOne({id});
-  res.render('profile',{db_user: foundUser});
+  //find by object id
+  const foundUser = await db_user.findOne(ObjectId(id));
+  res.render('profile',{User: foundUser});
 })
 
 app.get('/editprofile', async (req,res) => {
   const id = req.session.user_id;
-  const foundUser = await db_user.findOne({id});
+  console.log({id})
+  const foundUser = await db_user.findOne(ObjectId(id));
+  console.log({foundUser})
   res.render('editprofile',{User: foundUser});
 })
 
 app.post('/editprofile',async (req,res) => {
-  console.log('woot');
+
   const id = req.session.user_id;
-  const foundUser = await db_user.findOne({id});
-  console.log(req.body);
-  console.log('woot');
-  
-  const {newemail} = req.body;
-
-  console.log(newemail);
-  console.log('woot');
-
-  res.redirect('profile')
+  // const foundUser = await db_user.findOne(ObjectId(id));
+  const {newname,newemail} = req.body;
+  const updateUser = await db_user.findByIdAndUpdate({_id:id},{username:newname, useremail:newemail});
+  console.log({updateUser})
+  res.render('profile',{User: updateUser});
+  // res.render('profile')
   // foundUser.useremail = newemail;
   // User.updateOne(foundUser);
 })

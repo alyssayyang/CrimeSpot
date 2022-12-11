@@ -1,0 +1,18 @@
+
+1. handle status code
+    https://stackoverflow.com/questions/69984816/how-to-access-response-status-codes-from-backend-to-frontend
+    https://pusher.com/tutorials/http-response-codes-part-2/#create-the-server
+
+    two ways to implement:
+
+    a. routes send status code only, use fetch in ejs to handle form submission, check status code and redirect to other page
+    b. build more ejs files 
+
+2. render to home with name
+
+    https://stackoverflow.com/questions/60033167/how-to-render-user-to-home-with-name-in-url-after-login
+
+3. using findone vs using find decides whether you're returning an object or an array of object
+    so when displaying in ejs, its <%= user[0].username %> with find and <%= user.username %> with findone
+    
+    https://stackoverflow.com/questions/41993759/cant-get-username-from-req-user-to-output-in-express
