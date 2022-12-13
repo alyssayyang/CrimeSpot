@@ -37,7 +37,7 @@ const database= require('./models/database')
 const ObjectId = require('mongodb').ObjectId;
 
 const requireLogin = (req, res, next) => {
-  const id = req.session.user_id
+
     if (!req.session.user_id) {
         return res.redirect('/login')
     }
@@ -61,6 +61,13 @@ const requireLogin = (req, res, next) => {
 // }
 
 const requireAdmin = (req, res, next) => {
+  const currentuser = req.session.user
+  const id = req.session.user_id
+  const type = req.session.usertype;
+  console.log({currentuser})
+  console.log({id})
+  console.log({type})
+
   if(req.session.usertype != 'admin'){
     return res.send('requires admin access')
   }
@@ -180,6 +187,10 @@ app.post('/editprofile',async (req,res) => {
   // res.render('profile')
   // foundUser.useremail = newemail;
   // User.updateOne(foundUser);
+})
+
+app.get('/admin',requireAdmin,async(req,res) => {
+  res.render('adminpage')
 })
 
 

@@ -31,7 +31,7 @@ userSchema.statics.findAndValidate = async function (useremail, password
 userSchema.statics.validateEmail = async function(useremail){
     const foundUser = await this.findOne({useremail});
     return foundUser ? true : false;
-}
+}   
 
     
 // userSchema.statics.validateAdminAccess = async function(username){

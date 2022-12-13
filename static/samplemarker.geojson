@@ -1,0 +1,19 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "geojson",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-77.032, 38.913]
+            },
+            "properties": {
+                "title":"John Doe",
+                "description":"Male, Age 30"
+            }
+        }
+    ]
+}
+
+
+

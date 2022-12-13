@@ -5,6 +5,8 @@ mongoose.set('strictQuery', false);
 
 // const MongoClient = require('mongodb').MongoClient
 const myurl = "mongodb://127.0.0.1:27017/crimespot"
+// const myurl = "mongodb://0.0.0.0:27017/crimespot"
+
 
 mongoose.connect(myurl)
 const database = mongoose.connection;

@@ -16,3 +16,42 @@
     so when displaying in ejs, its <%= user[0].username %> with find and <%= user.username %> with findone
     
     https://stackoverflow.com/questions/41993759/cant-get-username-from-req-user-to-output-in-express
+
+4. mapbox customlize market icon
+
+  el.addEventListener('click', () => {
+  window.alert(marker.properties.message);
+  });
+
+  add  default marker
+  const marker1 = new mapboxgl.Marker()
+.setLngLat([12.554729, 55.70651])
+.addTo(map);
+ 
+// Create a default Marker, colored black, rotated 45 degrees.
+const marker2 = new mapboxgl.Marker({ color: 'black', rotation: 45 })
+.setLngLat([12.65147, 55.608166])
+.addTo(map);
+
+
+// const monument = [-77.0353, 38.8895];
+// // create the popup
+// const popup = new mapboxgl.Popup({ offset: 25 }).setText(
+//   'Construction on the Washington Monument began in 1848.'
+//   );
+   
+//   // create DOM element for the marker
+//   const el = document.createElement('div');
+//   el.id = 'marker';
+   
+//   // create the marker
+//   new mapboxgl.Marker(el)
+//   .setLngLat(monument)
+//   .setPopup(popup) // sets a popup on this marker
+//   .addTo(map);
+
+https://docs.mapbox.com/mapbox-gl-js/example/geojson-markers/
+
+5. json file, either make a new object, or change format of json file
+
+
