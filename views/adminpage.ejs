@@ -1,4 +1,178 @@
-<!-- todo: autofill for input with mapbox in admin page, get location info, then add it to json, finally
-show in home page
+<% layout('layouts/boilerplate')%>
+<style>
+    #footer {
+    position:fixed;
+    bottom:0;
+    width:100%;
+    }
 
-https://docs.mapbox.com/mapbox-search-js/api/web/autofill/ -->
+    #map {
+    width: 100%;
+    height: 600px;
+    border-radius: 10px;
+    }
+
+    .leftColumn{
+    width: 30%;
+    padding-right: 0px;
+    }
+
+    .rightColumn{
+    width: 70%;
+    padding-left: 3px;
+    }
+
+    .form-group{
+    padding: 5px;
+    }
+
+    .mapboxgl-popup {
+    max-width: 200px;
+    }
+
+    .mapboxgl-popup-content {
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    }
+
+    #marker {
+        background-image: url('https://docs.mapbox.com/mapbox-gl-js/assets/washington-monument.jpg');
+        background-size: cover;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    
+    .mapboxgl-popup {
+        max-width: 200px;
+    }
+</style>
+
+
+<main class = "p-2" >
+
+    <div class = "row">
+        <div class="leftColumn">
+            <div class="form-group">
+                <label for="">Felony Type: </label>
+                <select class="dropdown" id="dd_crimeType" style="max-width: 200px;">
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">Year:</label>
+                <select class="dropdown" id="dd_crimeyear">
+                </select>
+            </div>
+
+            <!-- <button>search</button> -->
+            <div class="d-grid gap-2 d-md-block my-lg-2">
+                <button class="btn btn-primary" type="button" id="search_bt" >Pin It</button>
+            </div>
+        
+        </div>
+
+        <div class = "rightColumn">
+            <div class="container">
+                <div id='map' class = 'map'>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- <script scr = "../public/scripts/map.js"></script>
+<script scr = "../public/scripts/home.js"></script> -->
+
+<!-- import 3rd party scripts and styles -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+
+
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoieWFuZzExMDMiLCJhIjoiY2w5dnd1cmdpMGQ4YjQxbzZncXVubGJ4aSJ9.ca1wlXnOgUYPXcvaJKJu1Q';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center:[-71.0575,42.3655],// longitude, Latitude
+        zoom:2.2
+    });
+
+
+    map.on('load', async () => {
+    const geodata = await get_markers();
+    const jsondata = {"type":"FeatureCollection","features": geodata}
+
+    map.loadImage(
+        'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png',
+        (error, image) => {
+        if (error) throw error;
+        map.addImage('custom-marker', image);
+        // Add a GeoJSON source with 2 points
+
+        const pointsdata = {"type":"geojson","data": jsondata}
+        map.addSource('points',pointsdata);
+        
+        // Add a symbol layer
+        map.addLayer({
+        'id': 'points',
+        'type': 'symbol',
+        'source': 'points',
+        'layout': {
+        'icon-image': 'custom-marker',
+        // get the title name from the source's "title" property
+        'text-field': ['get', 'title'],
+        'text-font': [
+        'Open Sans Semibold',
+        'Arial Unicode MS Bold'
+        ],
+        'text-offset': [0, 1.25],
+        'text-anchor': 'top'
+        }
+        });
+        }
+        );
+    });  
+
+    // When a click event occurs on a feature in the places layer, open a popup at the
+    // location of the feature, with description HTML from its properties.
+    map.on('click', 'points', (e) => {
+    // Copy coordinates array.
+    const coordinates = e.features[0].geometry.coordinates.slice();
+    const description = e.features[0].properties.description;
+    
+    // Ensure that if the map is zoomed out such that multiple
+    // copies of the feature are visible, the popup appears
+    // over the copy being pointed to.
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+    
+    new mapboxgl.Popup()
+    .setLngLat(coordinates)
+    .setHTML(description)
+    .addTo(map);
+    });
+
+    // Change the cursor to a pointer when the mouse is over the places layer.
+    map.on('mouseenter', 'places', () => {
+    map.getCanvas().style.cursor = 'pointer';
+    });
+    
+    // Change it back to a pointer when it leaves.
+    map.on('mouseleave', 'places', () => {
+    map.getCanvas().style.cursor = '';
+    });
+
+
+    const get_markers = async () => {
+    const response =  await fetch('http://localhost:3000/api/getmarkers', {method : 'GET'})
+    const data = await response.json()
+    return data;
+    }
+</script>
+

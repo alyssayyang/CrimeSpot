@@ -2,6 +2,7 @@
 const express = require('express')
 const db_user = require('./models/User')
 const db_crimedata = require('./models/CrimeData')
+const db_marker = require('./models/Marker')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 
@@ -74,9 +75,32 @@ const requireAdmin = (req, res, next) => {
   next();
 }
 
-app.get("/",(req,res) => {
-  // res.send('this is home page')
-  res.render("register")
+app.get("/", async (req,res) =>  {
+
+  const marker = new db_marker
+  (
+    {
+    type: "geojson",
+    geometry: 
+    {
+      type: "Point",
+      coordinates:[-71.057083,42.361145]
+    },
+    properties:
+    {
+      description: "Femail, Age 26, Blue eye",
+      title: "Jolly Ann"
+    }
+    }
+  )
+  
+  res.render('register');
+  // marker.save()
+  //   .then((response) => {console.log("saved success")})
+  //   .catch((error) => {
+  //     console.log(error)
+  //   })
+  
 });
 
 app.get('/getcrime',(req,res) => {

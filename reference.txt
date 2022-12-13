@@ -54,4 +54,5 @@ https://docs.mapbox.com/mapbox-gl-js/example/geojson-markers/
 
 5. json file, either make a new object, or change format of json file
 
-
+6. geojson schema
+https://github.com/geojson/schema

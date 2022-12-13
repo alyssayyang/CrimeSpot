@@ -76,14 +76,14 @@ map.addControl(
 );
 
 
-// Data: UN Human Development Index 2017 Europe extract
-// Source: https://ourworldindata.org/human-development-index
+
+
+//get populated crime rate data
 const get_data = async () => {
   const response =  await fetch('http://localhost:3000/api/getAll', {method : 'GET'})
   const data = await response.json()
   return data;
 }
-
 
 document.getElementById('search_bt').addEventListener("click",search_crimemap);
 
@@ -159,10 +159,14 @@ map.on('load', async () => {
   const matchExpression = await update_matchexpression('violent crime',2022);
   addmaplayer(matchExpression);
 
-  const data = await fetch('../static/samplemarker.geojson');
-  const jsondata = await data.json();
-  console.log({data});
-  console.log({jsondata})
+  // const data = await fetch('../static/samplemarker.geojson');
+  // const jsondata = await data.json();
+  // console.log({jsondata})
+
+
+
+  const geodata = await get_markers();
+  const jsondata = {"type":"FeatureCollection","features": geodata}
 
   map.loadImage(
     'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png',
@@ -176,19 +180,19 @@ map.on('load', async () => {
      
     // Add a symbol layer
     map.addLayer({
-    'id': 'points',
-    'type': 'symbol',
-    'source': 'points',
-    'layout': {
-    'icon-image': 'custom-marker',
-    // get the title name from the source's "title" property
-    'text-field': ['get', 'title'],
-    'text-font': [
-    'Open Sans Semibold',
-    'Arial Unicode MS Bold'
-    ],
-    'text-offset': [0, 1.25],
-    'text-anchor': 'top'
+      'id': 'points',
+      'type': 'symbol',
+      'source': 'points',
+      'layout': {
+      'icon-image': 'custom-marker',
+      // get the title name from the source's "title" property
+      'text-field': ['get', 'title'],
+      'text-font': [
+      'Open Sans Semibold',
+      'Arial Unicode MS Bold'
+      ],
+      'text-offset': [0, 1.25],
+      'text-anchor': 'top'
     }
     });
     }
@@ -226,40 +230,8 @@ map.on('mouseleave', 'places', () => {
   });
 
 
-
-
-async function addmarker() {
-
-    const geodata = await fetch('../static/samplemarker.geojson');
-    const geojson = await geodata.json();
-    const features_array = geojson.features;
-    console.log({features_array})
-  
-    // add markers to map
-    for (const feature of features_array) {
-      console.log({feature})
-    // create a HTML element for each feature;
-    // make a marker for each feature and add to the map
-
-    const desc = feature.properties.description;
-    console.log({desc})
-    const monument = feature.geometry.coordinates;
-    console.log({monument})
-
-    const popup = new mapboxgl.Popup({ offset: 25 }).setText(
-      desc
-    );
-   
-    console.log(map)
-     
-    new mapboxgl.Marker(el)
-    .setLngLat(monument)
-    .setPopup(popup) // sets a popup on this marker
-    .addTo(map);
-  
-  }
+const get_markers = async () => {
+  const response =  await fetch('http://localhost:3000/api/getmarkers', {method : 'GET'})
+  const data = await response.json()
+  return data;
 }
-
-
-
-
