@@ -30,4 +30,10 @@ const markerSchema = new mongoose.Schema({
     versionKey: false
 });
 
+markerSchema.statics.addmarker = async function(name,coordinates,description){
+  
+
+}
+
+
 module.exports = mongoose.model('Marker', markerSchema);

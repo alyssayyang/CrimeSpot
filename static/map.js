@@ -166,7 +166,9 @@ map.on('load', async () => {
 
 
   const geodata = await get_markers();
+  console.log({geodata})
   const jsondata = {"type":"FeatureCollection","features": geodata}
+  console.log({jsondata})
 
   map.loadImage(
     'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png',
@@ -177,7 +179,8 @@ map.on('load', async () => {
 
       const pointsdata = {"type":"geojson","data": jsondata}
       map.addSource('points',pointsdata);
-     
+      
+      console.log({pointsdata})
     // Add a symbol layer
     map.addLayer({
       'id': 'points',
@@ -233,5 +236,6 @@ map.on('mouseleave', 'places', () => {
 const get_markers = async () => {
   const response =  await fetch('http://localhost:3000/api/getmarkers', {method : 'GET'})
   const data = await response.json()
+  console.log({data})
   return data;
 }

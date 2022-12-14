@@ -45,22 +45,6 @@ const requireLogin = (req, res, next) => {
     next();
 }
 
-// const requireLogin = (req, res, next) => {
-//   db_user.findById(req.session.userId).exec(function (error, user) {
-//     if (error) {
-//         return next(error);
-//     } else {      
-//         if (user === null) {     
-//             var err = new Error('Not authorized! Go back!');
-//             err.status = 401;
-//             return next(err);
-//         } else {
-//             return next();
-//         }
-//     }
-// });
-// }
-
 const requireAdmin = (req, res, next) => {
   const currentuser = req.session.user
   const id = req.session.user_id
@@ -77,22 +61,7 @@ const requireAdmin = (req, res, next) => {
 
 app.get("/", async (req,res) =>  {
 
-  const marker = new db_marker
-  (
-    {
-    type: "geojson",
-    geometry: 
-    {
-      type: "Point",
-      coordinates:[-71.057083,42.361145]
-    },
-    properties:
-    {
-      description: "Femail, Age 26, Blue eye",
-      title: "Jolly Ann"
-    }
-    }
-  )
+
   
   res.render('register');
   // marker.save()
@@ -214,6 +183,30 @@ app.post('/editprofile',async (req,res) => {
 })
 
 app.get('/admin',requireAdmin,async(req,res) => {
+  res.render('adminpage')
+})
+
+app.post('/admin', async(req,res) => {
+  const{name,description,tx_coordinates} = req.body
+  const coordinates=tx_coordinates.split(',')
+  const marker = new db_marker
+  (
+    {
+    type: "geojson",
+    geometry: 
+    {
+      type: "Point",
+      coordinates: coordinates
+    },
+    properties:
+    {
+      description: description,
+      title: name
+    }
+    }
+  )
+  await db_marker.create(marker);
+
   res.render('adminpage')
 })
 

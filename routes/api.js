@@ -39,6 +39,21 @@ router.get('/getmarkers',async (req,res) => {
     }
 })
 
+router.post('./savemarker', async(req,res) =>{
+    try{
+        MongoClient.connect(myurl,function(err,db){
+            if(err) throw err;
+            var dbo = db.db('crimespot');
+            
+            // dbo.collection('markers').find({}).toArray()
+            // .then(response => res.status(200).json(response))
+            // .catch(error => console.log(error));
+        })
+    }catch(error){
+        res.status(500).json({message:error})
+    }
+})
+
 router.get('/getOne/:id',async (req,res) => {
     try{
         res.render('getone')
