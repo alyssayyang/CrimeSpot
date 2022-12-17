@@ -9,6 +9,8 @@ const map = new mapboxgl.Map({
     zoom:2.2
 });
 
+console.log({map})
+
 
 /* Given a query in the form "lng, lat" or "lat, lng"
 * returns the matching geographic coordinate(s)
